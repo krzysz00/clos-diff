@@ -19,11 +19,8 @@
 
 ;;;; Internals of a diff list:
 
-;;;; A diff is a list of n elements. The first element shall be a list of
-;;;; two elements. Element 1 of that sublist shall be the type of object
-;;;; neded to recieve the diff. Element 2 shall be the type of the object
-;;;; the diff was created from. If Elm. 1 is equal to NIL, an object of
-;;;; the appropriate type (Elm. 2) will be created.
+;;;; A diff is a list of n elements. The first element shall be a
+;;;; symbol naming the type of the object needed to recieve the diff.
 
 ;;;; The remaining items shall be lists, which shall be evaluated by
 ;;;; `diff-eval' accorging to the first element of the list. The remaining
@@ -43,7 +40,7 @@
 	  (closer-mop:class-slots (class-of object))))
 
 (defun diff-nil (obj &optional type)
-  (let ((diff (list (list type (type-of obj)))))
+  (let ((diff (list (or type (type-of obj)))))
     (loop for slot in (get-slots obj) do
 	 (let ((sv (slot-value obj slot)))
 	   (if (typep sv 'standard-object)
@@ -55,8 +52,9 @@
 
 (defun diff (old new &key (test #'equalp))
   (when (equal old nil) (return-from diff (diff-nil new)))
-  (unless (eql (type-of old) (type-of new)) (error "Must diff objects of the same type."))
-  (let ((diff (list (list (type-of new) (type-of old)))))
+  (unless (eql (type-of old) (type-of new)) 
+    (error "Must diff objects of the same type."))
+  (let ((diff (list (type-of new))))
     (loop for slot in (get-slots new) do
 	 (let ((svo (slot-value old slot)) (svn (slot-value new slot)))
 	   (unless (funcall test svo svn)

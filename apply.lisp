@@ -27,8 +27,8 @@
 
 (defun apply-diff (diff &optional obj)
   (let ((top (pop diff)))
-    (unless obj (setf obj (allocate-instance (first top))))
-    (unless (equal (type-of obj) (first top)) (error "Object type mismatch.")))
+    (unless obj (setf obj (allocate-instance (find-class top))))
+    (unless (equal (type-of obj) top) (error "Object type mismatch.")))
   (loop for i in diff do
        (eval-diff obj i))
   obj)
