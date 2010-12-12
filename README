@@ -21,4 +21,3 @@ function: clos-diff:apply (diff &optional object)
 
 This project is hosted on github. Submit bug reports there. Also, you
 may contact the author at krzysdrewniak AT gmail DOT com .
-
