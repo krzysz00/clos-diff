@@ -23,7 +23,7 @@
 (defsystem "clos-diff"
     :depends-on ("closer-mop")
     :name "clos-diff"
-    :version "something"
+    :version "something >= 0.1"
     :author "Krzysztof Drewniak <krzysdrewniak@gmail.com>"
     :licence "GNU GPL version 3 or any larter version"
     :serial t
