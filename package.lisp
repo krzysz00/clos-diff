@@ -17,4 +17,5 @@
 
 (defpackage clos-diff
   (:use :cl)
+  (:nicknames :cld)
   (:export :diff :apply-diff))
