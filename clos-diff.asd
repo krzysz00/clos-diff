@@ -24,7 +24,7 @@
     :depends-on ("closer-mop")
     :name "clos-diff"
     :version "something >= 0.1"
-    :author "Krzysztof Drewniak <krzysdrewniak@gmail.com>"
+    :author "Krzysztof Drewniak <krzysdrewniak <AT> gmail.com>"
     :licence "GNU GPL version 3 or any larter version"
     :serial t
     :components ((:file "package")
