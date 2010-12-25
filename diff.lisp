@@ -39,26 +39,36 @@
   (mapcar #'closer-mop:slot-definition-name 
 	  (closer-mop:class-slots (class-of object))))
 
-(defun diff-nil (obj &optional type)
+(defun diff-nil (obj &optional type circ-list)
+  (push obj circ-list)
   (let ((diff (list (or type (type-of obj)))))
     (loop for slot in (get-slots obj) do
 	 (let ((sv (slot-value obj slot)))
 	   (if (typep sv 'standard-object)
 	       (progn
+		 (when (member sv circ-list) 
+		   (error "Circular objects not supported  for diffing (yet)."))
 		 (push `(ii ,slot ,(type-of sv)) diff)
-		 (push `(recur ,slot ,(diff-nil sv (type-of sv))) diff))
+		 (push `(recur ,slot ,(diff-nil sv (type-of sv) circ-list)) 
+		       diff))
 	       (push `(sv ,slot ,sv) diff))))
     (setf diff (nreverse diff))))
 
-(defun diff (old new &key (test #'equalp))
+(defun diff (old new &key (test #'equalp) circ-list)
   (when (equal old nil) (return-from diff (diff-nil new)))
   (unless (eql (type-of old) (type-of new)) 
-    (error "Must diff objects of the same type."))
+    (cerror "Keep going, (the objects better dang well have the same slots!!)"
+	    "Must diff objects of the same type. Continue at your own risk."))
+  (push new circ-list)
   (let ((diff (list (type-of new))))
     (loop for slot in (get-slots new) do
 	 (let ((svo (slot-value old slot)) (svn (slot-value new slot)))
 	   (unless (funcall test svo svn)
 	     (if (typep svn 'standard-object)
-		 (push `(recur ,slot ,(diff svo svn :test test)) diff)
+		 (if (member svn circ-list)
+		     (error "Circular objects not supported for diffing (yet).")
+		     (push `(recur ,slot ,(diff svo svn :test test 
+						:circ-list circ-list))
+			   diff))
 		 (push `(sv ,slot ,svn) diff)))))
     (setf diff (nreverse diff))))
