@@ -13,7 +13,7 @@ function: clos-diff:diff (old new &key (test #'equalp))
   case is the old parameter is nil, a diff from an object with no
   bound slots will be created.
 
-function: clos-diff:apply (diff &optional object)
+function: clos-diff:apply-diff (diff &optional object)
   This function will apply the diff given in the parameter diff to the
   object contained in object. If object is nil, a fresh object of the
   appropriate type (with all slots unbound) will be created, and the
