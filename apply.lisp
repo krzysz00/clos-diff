@@ -18,12 +18,13 @@
 (in-package :clos-diff)
 
 (defun eval-diff (obj phrase)
-  (destructuring-bind (func arg1 arg2) phrase
+  (destructuring-bind (func arg1 &optional arg2) phrase
       (ecase func
 	(sv (setf (slot-value obj arg1) arg2))
 	(ii (setf (slot-value obj arg1) (allocate-instance arg2)))
 	(recur (setf (slot-value obj arg1)
-		     (apply-diff arg2 (slot-value obj arg1)))))))
+		     (apply-diff arg2 (slot-value obj arg1))))
+	(noval (slot-makunbound obj arg1)))))
 
 (defun apply-diff (diff &optional obj)
   (let ((top (pop diff)))

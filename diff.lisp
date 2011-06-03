@@ -28,11 +28,12 @@
 ;;;; of the list.
 
 ;;;; The allowed functions are
-;;;;  * sv (2 args) Set the slot in arg1 to arg2
+;;;;  * sv (2 args) Set the slot in arg1 to arg2.
 ;;;;  * ii (2 args) Set the slot in arg1 to the object returned by
 ;;;;    allocate-instance called with arg2.
 ;;;;  * recur (2 args) Resucse apply on the value of arg1 with the diff in
-;;;;    arg2
+;;;;    arg2.
+;;;;  * noval (1 arg) Unbind the slot in arg1.
 ;;;; Any other function will throw an error
 
 (defun get-slots (object)
@@ -41,17 +42,17 @@
 
 (defun diff-nil (obj &optional type circ-list)
   (push obj circ-list)
-  (let ((diff (list (or type (type-of obj)))))
+  (let ((diff (list (or type (type-of obj)))) (tsym (gensym)))
     (loop for slot in (get-slots obj) do
-	 (let ((sv (slot-value obj slot)))
+	 (let ((sv (if (slot-boundp obj slot) (slot-value obj slot) tsym)))
 	   (if (typep sv 'standard-object)
 	       (progn
 		 (when (member sv circ-list) 
-		   (error "Circular objects not supported  for diffing (yet)."))
+		   (error "Circular objects not supported for diffing (yet)."))
 		 (push `(ii ,slot ,(type-of sv)) diff)
 		 (push `(recur ,slot ,(diff-nil sv (type-of sv) circ-list)) 
 		       diff))
-	       (push `(sv ,slot ,sv) diff))))
+	       (push (if (eql tsym sv) `(noval ,slot) `(sv ,slot ,sv)) diff))))
     (setf diff (nreverse diff))))
 
 (defun diff (old new &key (test #'equalp) circ-list)
@@ -60,15 +61,16 @@
     (cerror "Keep going, (the objects better dang well have the same slots!!)"
 	    "Must diff objects of the same type. Continue at your own risk."))
   (push new circ-list)
-  (let ((diff (list (type-of new))))
-    (loop for slot in (get-slots new) do
-	 (let ((svo (slot-value old slot)) (svn (slot-value new slot)))
-	   (unless (funcall test svo svn)
-	     (if (typep svn 'standard-object)
-		 (if (member svn circ-list)
-		     (error "Circular objects not supported for diffing (yet).")
-		     (push `(recur ,slot ,(diff svo svn :test test 
-						:circ-list circ-list))
-			   diff))
-		 (push `(sv ,slot ,svn) diff)))))
-    (setf diff (nreverse diff))))
+  (let ((diff (list (type-of new))) (tsym (gensym)))
+    (flet ((slot-val (object slot) (if (slot-boundp object slot) (slot-value object slot) tsym)))
+      (loop for slot in (get-slots new) do
+	   (let ((svo (slot-val old slot)) (svn (slot-val new slot)))
+	     (unless (funcall test svo svn)
+	       (if (typep svn 'standard-object)
+		   (if (member svn circ-list)
+		       (error "Circular objects not supported for diffing (yet).")
+		       (push `(recur ,slot ,(diff svo svn :test test 
+						  :circ-list circ-list))
+			     diff))
+		   (push (if (eql svn tsym) `(noval ,slot) `(sv ,slot ,svn)) diff)))))
+      (setf diff (nreverse diff)))))
