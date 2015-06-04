@@ -15,7 +15,7 @@
 
 ;; Copyright (C) 2010 Krzysztof Drewniak <krzysdrewniak (at) gmail (dot) com>
 
-(defpackage clos-diff-system 
+(defpackage clos-diff-system
   (:use :cl :asdf))
 
 (in-package :clos-diff-system)
@@ -23,10 +23,11 @@
 (defsystem "clos-diff"
     :depends-on ("closer-mop")
     :name "clos-diff"
-    :version "something >= 0.1"
-    :author "Krzysztof Drewniak <krzysdrewniak <AT> gmail.com>"
-    :licence "GNU GPL version 3 or any larter version"
+    :version "1.0"
+    :author "Krzysztof Drewniak <krzysdrewniak@gmail.com>"
+    :licence "GNU GPL version 3 or any later version"
+    :description "A library for creating diffs of CLOS objects"
     :serial t
     :components ((:file "package")
-		  (:file "diff")
-		  (:file "apply")))
+                 (:file "diff")
+                 (:file "apply")))
